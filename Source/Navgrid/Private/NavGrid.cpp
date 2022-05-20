@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "NavGrid.h"
 #include "NavGridPrivatePCH.h"
 #include "AssetRegistryModule.h"
 
@@ -302,9 +303,9 @@ bool ANavGrid::TraceTileLocation(const FVector & TraceStart, const FVector & Tra
 
 	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECollisionChannel::ECC_Pawn, CQP);
 	bool bHasDisableTileTag = false;
-	if (HitResult.Actor.IsValid())
+	if (IsValid(HitResult.GetActor()))
 	{
-		bHasDisableTileTag = HitResult.Actor->ActorHasTag(DisableVirtualTilesTag);
+		bHasDisableTileTag = HitResult.GetActor()->ActorHasTag(DisableVirtualTilesTag);
 	}
 
 	OutTilePos = HitResult.ImpactPoint;

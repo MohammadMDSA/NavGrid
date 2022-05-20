@@ -1,3 +1,5 @@
+
+#include "TurnManager.h"
 #include "NavGridPrivatePCH.h"
 
 ATurnManager::ATurnManager() :
