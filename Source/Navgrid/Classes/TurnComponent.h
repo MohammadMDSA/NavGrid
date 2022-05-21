@@ -7,6 +7,19 @@
 
 #include "TurnComponent.generated.h"
 
+UENUM()
+enum class EGridPawnState : uint8
+{
+	/* it is not this pawns turn */
+	WaitingForTurn	UMETA(DisplayName = "Waiting for turn"),
+	/* Ready for player input */
+	Ready			UMETA(DisplayName = "Ready"),
+	/* Currently performing some sort of action and is not ready for player input */
+	Busy			UMETA(DisplayName = "Busy"),
+	/* Dead */
+	Dead			UMETA(DisplayName = "Dead")
+};
+
 /**
 * Actors with a turn component can be managed by a turn manager
 */
@@ -70,4 +83,6 @@ public:
 	// called by the turn manager
 	void OnTurnStart();
 	void OnTurnEnd();
+
+	EGridPawnState GetState();
 };

@@ -122,3 +122,21 @@ void UTurnComponent::OnTurnEnd()
 {
 	GetWorld()->GetTimerManager().ClearTimer(TurnTimeoutHandle);
 }
+
+EGridPawnState UTurnComponent::GetState()
+{
+	auto movementComp = Cast<UGridMovementComponent>(GetOwner()->GetComponentByClass(UGridMovementComponent::StaticClass()));
+
+	if (!this->MyTurn())
+	{
+		return EGridPawnState::WaitingForTurn;
+	}
+	else if (movementComp->Velocity.Size() > 0)
+	{
+		return EGridPawnState::Busy;
+	}
+	else
+	{
+		return EGridPawnState::Ready;
+	}
+}

@@ -9,7 +9,7 @@
 class ANavGrid;
 class ATurnManager;
 class UTurnComponent;
-class AGridPawn;
+class UGridMovementComponent;
 class UNavTileComponent;
 
 /**
@@ -49,7 +49,7 @@ public:
 
 	/* The pawn we're currently controlling */
 	UPROPERTY(BlueprintReadWrite)
-	AGridPawn *GridPawn;
+	UGridMovementComponent *GridPawn;
 	/* The NavGrid in the current game */
 	UPROPERTY(BlueprintReadWrite)
 	ANavGrid *Grid;

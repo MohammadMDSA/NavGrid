@@ -24,10 +24,11 @@ void ANavGridPC::BeginPlay()
 
 void ANavGridPC::OnTileClicked(const UNavTileComponent *Tile)
 {
+	auto turnComp = Cast<UTurnComponent>(GridPawn->GetOwner()->GetComponentByClass(UTurnComponent::StaticClass()));
 	/* Try to move the current pawn to the clicked tile */
-	if (GridPawn && GridPawn->GetState() == EGridPawnState::Ready)
+	if (GridPawn && turnComp && turnComp->GetState() == EGridPawnState::Ready)
 	{
-		if (GridPawn->CanMoveTo(*Tile))
+		if (GridPawn->CanMoveTo(Tile))
 		{
 			GridPawn->MoveTo(*Tile);
 		}
@@ -36,14 +37,16 @@ void ANavGridPC::OnTileClicked(const UNavTileComponent *Tile)
 
 void ANavGridPC::OnTileCursorOver(const UNavTileComponent *Tile)
 {
+	auto turnComp = Cast<UTurnComponent>(GridPawn->GetOwner()->GetComponentByClass(UTurnComponent::StaticClass()));
+
 	/* If the pawn is not moving, try to create a path to the hovered tile and show it */
-	if (GridPawn && GridPawn->GetState() == EGridPawnState::Ready)
+	if (GridPawn && turnComp && turnComp->GetState() == EGridPawnState::Ready)
 	{
 		Grid->Cursor->SetWorldLocation(Tile->GetPawnLocation() + FVector(0, 0, Grid->UIOffset));
 		Grid->Cursor->SetVisibility(true);
 
-		UGridMovementComponent *MovementComponent = GridPawn->MovementComponent;
-		if (GridPawn->CanMoveTo(*Tile))
+		UGridMovementComponent *MovementComponent = GridPawn;
+		if (GridPawn->CanMoveTo(Tile))
 		{
 			MovementComponent->CreatePath(*Tile);
 			MovementComponent->ShowPath();
@@ -57,16 +60,17 @@ void ANavGridPC::OnEndTileCursorOver(const UNavTileComponent *Tile)
 	/* Hide the previously shown path */
 	if (GridPawn)
 	{
-		UGridMovementComponent *MovementComponent = GridPawn->MovementComponent;
+		UGridMovementComponent *MovementComponent = GridPawn;
 		MovementComponent->HidePath();
 	}
 }
 
 void ANavGridPC::OnTurnStart(UTurnComponent *Component)
 {
-	if (Component->GetOwner()->IsA<AGridPawn>())
+	auto moveComp = Cast<UGridMovementComponent>(Component->GetOwner()->GetComponentByClass(UGridMovementComponent::StaticClass()));
+	if (IsValid(moveComp))
 	{
-		GridPawn = Cast<AGridPawn>(Component->GetOwner());
+		GridPawn = moveComp;
 	}
 }
 

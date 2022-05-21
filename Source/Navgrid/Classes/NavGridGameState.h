@@ -30,7 +30,7 @@ public:
 	template <class T>
 	T *GetTurnManager() { return Cast<T>(GetTurnManager()); }
 
-	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnPawnEnterTile, class AGridPawn *, class UNavTileComponent *);
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnPawnEnterTile, class UGridMovementComponent *, class UNavTileComponent *);
 	FOnPawnEnterTile &OnPawnEnterTile() { return PawnEnterTileDelegate; }
 private:
 	FOnPawnEnterTile PawnEnterTileDelegate;

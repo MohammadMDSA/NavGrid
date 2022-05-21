@@ -177,7 +177,7 @@ void UNavTileComponent::SetHighlight(FName NewHighlightType)
 		FVector TileSize = GetScaledBoxExtent() * 2;
 		FTransform Transform = GetComponentTransform();
 		Transform.SetScale3D(FVector(TileSize.X / MeshSize.X, TileSize.Y / MeshSize.Y, 1));
-		HighlightComponent->AddInstanceWorldSpace(Transform);
+		HighlightComponent->AddInstance(Transform, true);
 	}
 }
 

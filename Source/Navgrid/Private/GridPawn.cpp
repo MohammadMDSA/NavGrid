@@ -181,22 +181,6 @@ void AGridPawn::PlayAITurn()
 	TurnComponent->EndTurn();
 }
 
-EGridPawnState AGridPawn::GetState() const
-{
-	if (!TurnComponent->MyTurn())
-	{
-		return EGridPawnState::WaitingForTurn;
-	}
-	else if (MovementComponent->Velocity.Size() > 0)
-	{
-		return EGridPawnState::Busy;
-	}
-	else
-	{
-		return EGridPawnState::Ready;
-	}
-}
-
 /** Can this pawn start its turn right now?
   *  1) It must be the pawns teams turn
   *  2) It must be in the WaitingForTurn state
@@ -217,13 +201,13 @@ bool AGridPawn::CanBeSelected()
 				return false;
 			}
 			// 2) It must be in the WaitingForTurn state
-			if (GetState() != EGridPawnState::WaitingForTurn)
+			if (TurnComponent->GetState() != EGridPawnState::WaitingForTurn)
 			{
 				return false;
 			}
 			// 3) The pawn currently in its turn must be idle
 			AGridPawn* CurrentPawn = Cast<AGridPawn>(TurnManager->GetCurrentComponent()->GetOwner());
-			if (!IsValid(CurrentPawn) || CurrentPawn->GetState() == EGridPawnState::Busy)
+			if (!IsValid(CurrentPawn) || CurrentPawn->TurnComponent->GetState() == EGridPawnState::Busy)
 			{
 				return false;
 			}
@@ -236,17 +220,7 @@ bool AGridPawn::CanBeSelected()
 
 bool AGridPawn::CanMoveTo(const UNavTileComponent & Tile)
 {
-	if (MovementComponent->GetTile() != &Tile &&
-		Tile.LegalPositionAtEndOfTurn(MovementComponent->AvailableMovementModes))
-	{
-		TArray<UNavTileComponent *> InRange;
-		MovementComponent->GetNavGrid()->GetTilesInRange(this, InRange);
-		if (Tile.Distance <= MovementComponent->MovementRange)
-		{
-			return true;
-		}
-	}
-	return false;
+	return MovementComponent->CanMoveTo(&Tile);
 }
 
 void AGridPawn::MoveTo(const UNavTileComponent & Tile)
@@ -315,7 +289,7 @@ void AGridPawn::UpdatePreviewTiles()
 	}
 
 	TArray<UNavTileComponent *> Tiles;
-	PreviewGrid->GetTilesInRange(this, Tiles);
+	PreviewGrid->GetTilesInRange(MovementComponent, Tiles);
 	for (UNavTileComponent *Tile : Tiles)
 	{
 		Tile->SetHighlight("Movable");

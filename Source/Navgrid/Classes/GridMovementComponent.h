@@ -119,6 +119,7 @@ public:
 
 	/* Create a path to TargetTile, return false if no path is found */
 	bool CreatePath(const UNavTileComponent &Target);
+	bool CanMoveTo(const UNavTileComponent* target);
 	/* Create a path and follow it if it exists */
 	bool MoveTo(const UNavTileComponent &Target);
 	/* Turn in place */
@@ -131,6 +132,11 @@ public:
 	float GetRemainingDistance();
 	/* Use actor rotation for components where we have an rotation locks, use InRotation for the rest */
 	FRotator ApplyRotationLocks(const FRotator &InRotation);
+
+	UCapsuleComponent* GetMovementCollisionCapsule() {
+		return Cast<UCapsuleComponent>(GetOwner()->GetComponentByClass(UCapsuleComponent::StaticClass()));
+	}
+
 protected:
 	FRotator DesiredForwardRotation;
 public:

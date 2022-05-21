@@ -192,16 +192,16 @@ void ANavGrid::EndTileCursorOver(const UNavTileComponent *Tile)
 	OnEndTileCursorOver.Broadcast(Tile);
 }
 
-void ANavGrid::CalculateTilesInRange(AGridPawn *Pawn)
+void ANavGrid::CalculateTilesInRange(UGridMovementComponent *Comp)
 {
 	QUICK_SCOPE_CYCLE_COUNTER(STAT_ANavGrid_CalculateTilesInRange);
 
 	ClearTiles();
 	if (EnableVirtualTiles)
 	{
-		GenerateVirtualTiles(Pawn);
+		GenerateVirtualTiles(Comp);
 	}
-	UNavTileComponent *Current = Pawn->GetTile();
+	UNavTileComponent *Current = Comp->GetTile();
 	/* if we're not on the grid, the number of tiles in range is zero */
 	if (!Current)
 	{
@@ -210,15 +210,15 @@ void ANavGrid::CalculateTilesInRange(AGridPawn *Pawn)
 
 	Current->Distance = 0;
 	TArray<UNavTileComponent *> NeighbouringTiles;
-	Current->GetUnobstructedNeighbours(*Pawn->MovementCollisionCapsule, NeighbouringTiles);
+	Current->GetUnobstructedNeighbours(*Comp->GetMovementCollisionCapsule(), NeighbouringTiles);
 	TArray<UNavTileComponent *> TentativeSet(NeighbouringTiles);
 
 	while (Current)
 	{
-		Current->GetUnobstructedNeighbours(*Pawn->MovementCollisionCapsule, NeighbouringTiles);
+		Current->GetUnobstructedNeighbours(*Comp->GetMovementCollisionCapsule(), NeighbouringTiles);
 		for (UNavTileComponent *N : NeighbouringTiles)
 		{
-			if (!N->Traversable(Pawn->MovementComponent->AvailableMovementModes))
+			if (!N->Traversable(Comp->AvailableMovementModes))
 			{
 				continue;
 			}
@@ -247,7 +247,7 @@ void ANavGrid::CalculateTilesInRange(AGridPawn *Pawn)
 						N->Distance = TentativeDistance;
 						N->Backpointer = Current;
 
-						if (TentativeDistance <= Pawn->MovementComponent->MovementRange)
+						if (TentativeDistance <= Comp->MovementRange)
 						{
 							TentativeSet.AddUnique(N);
 						}
@@ -257,7 +257,7 @@ void ANavGrid::CalculateTilesInRange(AGridPawn *Pawn)
 		}
 		Current->Visited = true;
 		TentativeSet.Remove(Current);
-		if (Current != Pawn->GetTile()) { TilesInRange.Add(Current); } // dont include the starting tile
+		if (Current != Comp->GetTile()) { TilesInRange.Add(Current); } // dont include the starting tile
 		if (TentativeSet.Num())
 		{
 			Current = TentativeSet[0];
@@ -269,13 +269,13 @@ void ANavGrid::CalculateTilesInRange(AGridPawn *Pawn)
 	}
 }
 
-void ANavGrid::GetTilesInRange(AGridPawn *Pawn, TArray<UNavTileComponent*>& OutTiles)
+void ANavGrid::GetTilesInRange(UGridMovementComponent *Comp, TArray<UNavTileComponent*>& OutTiles)
 {
-	if (Pawn != CurrentPawn || Pawn->GetTile() != CurrentTile)
+	if (Comp != CurrentPawn || Comp->GetTile() != CurrentTile)
 	{
-		CalculateTilesInRange(Pawn);
-		CurrentPawn = Pawn;
-		CurrentTile = Pawn->GetTile();
+		CalculateTilesInRange(Comp);
+		CurrentPawn = Comp;
+		CurrentTile = Comp->GetTile();
 	}
 	OutTiles = TilesInRange;
 }
@@ -386,7 +386,7 @@ FVector ANavGrid::AdjustToTileLocation(const FVector &Location)
 	return AdjustedLocation;
 }
 
-void ANavGrid::GenerateVirtualTiles(const AGridPawn *Pawn)
+void ANavGrid::GenerateVirtualTiles(const UGridMovementComponent *Comp)
 {
 	QUICK_SCOPE_CYCLE_COUNTER(STAT_ANavGrid_GenerateVirtualTiles);
 
@@ -397,12 +397,12 @@ void ANavGrid::GenerateVirtualTiles(const AGridPawn *Pawn)
 		DestroyVirtualTiles();
 	}
 
-	GenerateVirtualTile(Pawn);
+	GenerateVirtualTile(Comp);
 
-	FVector Center = AdjustToTileLocation(Pawn->GetActorLocation());
+	FVector Center = AdjustToTileLocation(Comp->GetActorLocation());
 
-	FVector Min = Center - FVector(Pawn->MovementComponent->MovementRange * TileSize);
-	FVector Max = Center + FVector(Pawn->MovementComponent->MovementRange * TileSize);
+	FVector Min = Center - FVector(Comp->MovementRange * TileSize);
+	FVector Max = Center + FVector(Comp->MovementRange * TileSize);
 	for (float X = Min.X; X <= Max.X; X += TileSize)
 	{
 		for (float Y = Min.Y; Y <= Max.Y; Y += TileSize)
@@ -419,9 +419,9 @@ void ANavGrid::GenerateVirtualTiles(const AGridPawn *Pawn)
 	}
 }
 
-void ANavGrid::GenerateVirtualTile(const AGridPawn * Pawn)
+void ANavGrid::GenerateVirtualTile(const UGridMovementComponent* Comp)
 {
-	FVector Location = AdjustToTileLocation(Pawn->GetActorLocation());
+	FVector Location = AdjustToTileLocation(Comp->GetActorLocation());
 	UNavTileComponent *TileComp = ConsiderPlaceTile(Location + FVector(0, 0, TileSize), Location - FVector(0, 0, 0.1));
 	if (TileComp)
 	{

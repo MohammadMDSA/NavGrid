@@ -14,19 +14,6 @@ class UArrowComponent;
 class UNavTileComponent;
 class ANavGrid;
 
-UENUM()
-enum class EGridPawnState : uint8
-{
-	/* it is not this pawns turn */
-	WaitingForTurn	UMETA(DisplayName = "Waiting for turn"),
-	/* Ready for player input */
-	Ready			UMETA(DisplayName = "Ready"),
-	/* Currently performing some sort of action and is not ready for player input */
-	Busy			UMETA(DisplayName = "Busy"),
-	/* Dead */
-	Dead			UMETA(DisplayName = "Dead")
-};
-
 /** A pawn that can move around on a NavGrid. */
 UCLASS()
 class NAVGRID_API AGridPawn : public APawn, public IGenericTeamAgentInterface
@@ -110,9 +97,6 @@ public:
 
 	/* override this class and implement your own AI here. The default implementation just ends the turn */
 	virtual void PlayAITurn();
-	/* Get the current state for this pawn */
-	UFUNCTION(BlueprintCallable)
-	virtual EGridPawnState GetState() const;
 	/* is this pawn controlled by a human player? */
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 	bool bHumanControlled;

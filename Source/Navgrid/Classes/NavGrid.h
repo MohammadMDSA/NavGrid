@@ -91,11 +91,11 @@ public:
 
 protected:
 	/* Do pathfinding and and store all tiles that Pawn can reach in TilesInRange */
-	virtual void CalculateTilesInRange(AGridPawn *Pawn);
+	virtual void CalculateTilesInRange(UGridMovementComponent *Comp);
 public:
 	/* Find all tiles in range. Call CalculateTilesInRange if neccecary */
 	UFUNCTION(BlueprintCallable, Category = "Pathfinding")
-	void GetTilesInRange(AGridPawn *Pawn, TArray<UNavTileComponent *> &OutTiles);
+	void GetTilesInRange(UGridMovementComponent *Comp, TArray<UNavTileComponent *> &OutTiles);
 	/* Reset all temporary data in all tiles in the world */
 	UFUNCTION(BlueprintCallable, Category = "Pathfinding")
 	void ClearTiles();
@@ -105,7 +105,7 @@ protected:
 	TArray<UNavTileComponent *> TilesInRange;
 	/* Latest Pawn passed to CalculcateTilesInRange() */
 	UPROPERTY()
-	AGridPawn *CurrentPawn;
+	UGridMovementComponent *CurrentPawn;
 	/* Starting Tile for the latest call to CalculcateTilesInRange() */
 	UPROPERTY()
 	UNavTileComponent *CurrentTile;
@@ -135,10 +135,10 @@ protected:
 	TArray<UNavTileComponent *> VirtualTiles;
 	/* place virtual tiles within the movement range of a pawn */
 	UFUNCTION(BlueprintCallable, Category = "Pathfinding")
-	void GenerateVirtualTiles(const AGridPawn *Pawn);
+	void GenerateVirtualTiles(const UGridMovementComponent *Comp);
 	/* place a single virtual tile under a pawn */
 	UFUNCTION(BlueprintCallable, Category = "Pathfinding")
-	void GenerateVirtualTile(const AGridPawn *Pawn);
+	void GenerateVirtualTile(const UGridMovementComponent *Comp);
 	void DestroyVirtualTiles();
 	virtual void Destroyed() override;
 public:

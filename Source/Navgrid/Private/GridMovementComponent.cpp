@@ -229,8 +229,7 @@ void UGridMovementComponent::ConsiderUpdateCurrentTile()
 			ANavGridGameState *GameState = Cast<ANavGridGameState>(UGameplayStatics::GetGameState(GetOwner()));
 			if (IsValid(GameState))
 			{
-				AGridPawn *GridPawn = Cast<AGridPawn>(GetOwner());
-				GameState->OnPawnEnterTile().Broadcast(GridPawn, CurrentTile);
+				GameState->OnPawnEnterTile().Broadcast(this, CurrentTile);
 			}
 		}
 	}
@@ -242,7 +241,7 @@ void UGridMovementComponent::GetTilesInRange(TArray<UNavTileComponent *> &OutTil
 	if (IsValid(Grid))
 	{
 		ConsiderUpdateCurrentTile();
-		Grid->GetTilesInRange(Cast<AGridPawn>(GetOwner()), OutTiles);
+		Grid->GetTilesInRange(this, OutTiles);
 	}
 }
 
@@ -270,9 +269,8 @@ void UGridMovementComponent::StringPull(TArray<const UNavTileComponent*>& InPath
 
 	if (InPath.Num() > 2)
 	{
-		AGridPawn *GridPawnOwner = Cast<AGridPawn>(GetOwner());
 		OutPath.Empty();
-		const UCapsuleComponent &Capsule = *GridPawnOwner->MovementCollisionCapsule;
+		const UCapsuleComponent &Capsule = *GetMovementCollisionCapsule();
 		int32 CurrentIdx = 0;
 		OutPath.Add(InPath[0]);
 		for (int32 Idx = 1; Idx < InPath.Num() - 1; Idx++)
@@ -310,7 +308,7 @@ void UGridMovementComponent::StringPull(TArray<const UNavTileComponent*>& InPath
 bool UGridMovementComponent::CreatePath(const UNavTileComponent &Target)
 {
 	QUICK_SCOPE_CYCLE_COUNTER(STAT_UGridMovementComponent_CreatePath);
-	AGridPawn *Owner = Cast<AGridPawn>(GetOwner());
+	AActor *Owner = GetOwner();
 
 	if (!IsValid(CurrentTile))
 	{
@@ -320,7 +318,7 @@ bool UGridMovementComponent::CreatePath(const UNavTileComponent &Target)
 
 	ANavGrid* Grid = GetNavGrid();
 	TArray<UNavTileComponent *> InRange;
-	Grid->GetTilesInRange(Cast<AGridPawn>(GetOwner()), InRange);
+	Grid->GetTilesInRange(this, InRange);
 	if (InRange.Contains(&Target))
 	{
 		// create a list of tiles from the destination to the starting point and reverse it
@@ -363,6 +361,20 @@ bool UGridMovementComponent::CreatePath(const UNavTileComponent &Target)
 	return false; // no path to TargetTile
 }
 
+bool UGridMovementComponent::CanMoveTo(const UNavTileComponent* target)
+{
+	if (GetTile() != target && target->LegalPositionAtEndOfTurn(AvailableMovementModes))
+	{
+		TArray<UNavTileComponent*> InRange;
+		GetNavGrid()->GetTilesInRange(this, InRange);
+		if (target->Distance <= MovementRange)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 bool UGridMovementComponent::MoveTo(const UNavTileComponent &Target)
 {
 	bool PathExists = CreatePath(Target);
@@ -384,7 +396,7 @@ void UGridMovementComponent::TurnTo(const FRotator & Forward)
 
 void UGridMovementComponent::SnapToGrid()
 {
-	AGridPawn *GridPawnOwner = Cast<AGridPawn>(GetOwner());
+	AActor* GridPawnOwner = GetOwner();
 	check(GridPawnOwner);
 
 	ConsiderUpdateCurrentTile();
